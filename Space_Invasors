@@ -1,5 +1,7 @@
+//incluo a biblioteca do display 16X2.
 #include <LiquidCrystal.h>
 
+//Defino os pinos de botões e leds.
 #define Left 8
 #define Right 9
 #define Up 6
@@ -9,68 +11,40 @@
 #define vida2 A1
 #define vida3 A2
 
-LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
-int num, num_inim;
-int t, cont;
-String nome;
-int vida, morto, score, lado, altura, altura_inim, t_altura, t_lado, num_tiro  = 0;
-int lado_inim = 16;
-void setup() {
-  pinMode(Left, INPUT);
-  pinMode(Right, INPUT);
-  pinMode(Up, INPUT);
-  pinMode(Down, INPUT);
-  pinMode(Shot, OUTPUT);
-  lcd.begin(16, 2);
-  Serial.begin(9600);
-}
-void loop() {
-  start();
-  leds();
-  if(vida > 0){
-  	jogo();
-    inimigos();
-  	tiro();
-  	if((lado == lado_inim or lado == lado_inim-1) && altura == altura_inim){
-    	vida = vida - 1;
-      if (vida == 0){
-        morto = 1;
-      }
-    	inimigos();
-    	cont = 0;
-    	lcd.clear();
-    	delay(25);
-  	}
-  	if((t_lado == lado_inim or t_lado-1 == lado_inim) && t_altura == altura_inim){
-    	tiro();
-    	inimigos();
-    	cont = 0;
-    	num_tiro = 0;
-    	lcd.clear();
-      	score = score + 50;
-    	delay(10);
-  	}
-  	delay(75);
-  }
-  else if (morto == 1){
-    morto = 1;
-    lcd.setCursor(0, 0);
-    lcd.print("G A M E  O V E R");
-    lcd.setCursor(0, 1);
-    lcd.print("S C O R E :");
-    lcd.setCursor(11, 1);
-    lcd.print(score);
-    lcd.scrollDisplayRight();
-    delay(10);
-    if(digitalRead(Shot) == HIGH && vida == 0 && morto == 1){
-    	lcd.clear();
-      	morto = 0;
-      	delay(100);
-    }
 
+LiquidCrystal lcd(12, 11, 5, 4, 3, 2); //Pinos do display.
+
+int cont; //Contagem de inimigos na tela
+
+int vida, morto, score, lado, altura, altura_inim, t_altura, t_lado, num_tiro  = 0; //Número de vidas, se está Vivo ou Morto, lado e altura do jogador, lado e altura do inimigo, e startando com o número de tiros na tela em 0.
+
+int lado_inim = 16; //Para que assim o inimigo sempre venha da direita para a esquerda independente da altura.
+
+void setup() {
+  pinMode(Left, INPUT); //Definindo o botão para esquerda.
+  pinMode(Right, INPUT); //Definindo o botão para direira.
+  pinMode(Up, INPUT); //Definindo o botão para cima.
+  pinMode(Down, INPUT); //Definindo o botão para baixo.
+  pinMode(Shot, OUTPUT); //Definindo o botão de tiro.
+  lcd.begin(16, 2); //inicializo o display 16X2.
+}
+
+void start(){
+  if(digitalRead(Shot) == HIGH && vida == 0 && morto == 0){ //Verifica se o número de vidas está zerado e se já morreu (como ainda não ele funciona meio como um __init__ na primeira vez) e se pressionado o botão de tiro ele começa o jogo acendendo os leds e te dando 3 vidas.
+    	lcd.clear(); //Limpa a tela do display.
+    	vida = 3; 
+    	delay(300); //espera 300 milisegundos para começar 
+  }  
+  else if (morto == 0 && vida == 0){ //Caso o botão não eja pressionado é  exibido uma mensagem de "PRESS START" no display.
+  	lcd.setCursor(0, 0);
+    	lcd.print("PRESS START");
+    	lcd.scrollDisplayRight();
+    	delay(100);
   }
 }
-void jogo(){
+
+
+void jogo(){ //Controla os botões e suas ações com a anave do jogador, tendo direção e tiro.
     if(digitalRead(Up) == HIGH ){
       lcd.setCursor(lado, altura);
       lcd.print(" ");
@@ -100,7 +74,9 @@ void jogo(){
 	lcd.print(">");
     delay(10);
 }
-void inimigos(){
+
+
+void inimigos(){ //Controla o número de inimigos, sua geração aleatória e o mantém andando até sair da tela ou ser eliminado.
   if (cont == 0 or lado_inim == -2){
     altura_inim = (random(0, 2));
     lado_inim = 16;
@@ -115,56 +91,91 @@ void inimigos(){
     delay(70);
   }
 }
-void tiro(){
+
+void tiro(){ //Caso o tiro passe do "campo de visão" do display ele é anulado e o jogador pode realizar outro tiro, caso contrário o tiro seguira andando reto.
   if(t_lado == 17){
   	t_lado,t_altura = 0;
-    num_tiro = 0;
+    	num_tiro = 0;
     
   }
   if(num_tiro == 1){
-    lcd.setCursor(t_lado-1, t_altura);
+    	lcd.setCursor(t_lado-1, t_altura);
   	lcd.print(" ");
   	lcd.setCursor(t_lado, t_altura);
   	lcd.print("-");
-    t_lado++;
+    	t_lado++;
    	delay(10);
   }
 }
-void leds(){
+
+
+void leds(){ //Função que verifica o número de vidas do jogador e ascende os leds conforme o mesmo.
   if(vida == 0){
   	analogWrite(vida1, 0);
-    analogWrite(vida2, 0);
-    analogWrite(vida3, 0);
+    	analogWrite(vida2, 0);
+    	analogWrite(vida3, 0);
   }
   else if(vida == 1){
 	analogWrite(vida1, 1023);
-    analogWrite(vida2, 0);
-    analogWrite(vida3, 0);
+    	analogWrite(vida2, 0);
+    	analogWrite(vida3, 0);
   }
   else if(vida == 2){
-    analogWrite(vida1, 1023);
-    analogWrite(vida2, 1023);
-    analogWrite(vida3, 0);
+    	analogWrite(vida1, 1023);
+    	analogWrite(vida2, 1023);
+    	analogWrite(vida3, 0);
   }
   else if(vida == 3){
-    analogWrite(vida1, 1023);
-    analogWrite(vida2, 1023);
-    analogWrite(vida3, 1023);
-  }  
-
-}
-
-void start(){
-  if(digitalRead(Shot) == HIGH && vida == 0 && morto == 0){
+    	analogWrite(vida1, 1023);
+    	analogWrite(vida2, 1023);
+    	analogWrite(vida3, 1023);
+  } 
+  
+  
+void loop() {
+  start();
+  leds();
+  if(vida > 0){ //Verifica se o jogador não está morto e também a colisão dos tiros, caso o jogador perca sua 3 vidas é definido como morto
+  	jogo();
+    	inimigos();
+  	tiro();
+  	if((lado == lado_inim or lado == lado_inim-1) && altura == altura_inim){
+    		vida = vida - 1;
+	}
+      	if (vida == 0){
+        	morto = 1;
+      	}
+    	inimigos();
+    	cont = 0;
     	lcd.clear();
-    	vida = 3; 
-    	delay(300);
-  }  
-  else if (morto == 0 && vida == 0){
-  	lcd.setCursor(0, 0);
-    lcd.print("PRESS START");
-    lcd.scrollDisplayRight();
-    delay(100);
+    	delay(25);
+  	}
+  	if((t_lado == lado_inim or t_lado-1 == lado_inim) && t_altura == altura_inim){
+    		tiro();
+    		inimigos();
+    		cont = 0;
+    		num_tiro = 0;
+    		lcd.clear();
+      		score = score + 50;
+    		delay(10);
+  	}
+  	delay(75);
   }
-
+  else if (morto == 1){ //Define o jogador como morto e mostra uma mensagem com a pontuação do jogador, esperando o botão de tiro ser pressionado para reiniciar o jogo.
+    morto = 1;
+    lcd.setCursor(0, 0);
+    lcd.print("G A M E  O V E R");
+    lcd.setCursor(0, 1);
+    lcd.print("S C O R E :");
+    lcd.setCursor(11, 1);
+    lcd.print(score);
+    lcd.scrollDisplayRight();
+    delay(10);
+    if(digitalRead(Shot) == HIGH && vida == 0 && morto == 1){
+    	lcd.clear();
+      	morto = 0;
+      	delay(100);
+    }
+  }
 }
+
