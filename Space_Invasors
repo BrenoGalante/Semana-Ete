@@ -130,34 +130,33 @@ void leds(){ //Função que verifica o número de vidas do jogador e ascende os 
     	analogWrite(vida2, 1023);
     	analogWrite(vida3, 1023);
   } 
-  
+}
   
 void loop() {
   start();
   leds();
   if(vida > 0){ //Verifica se o jogador não está morto e também a colisão dos tiros, caso o jogador perca sua 3 vidas é definido como morto
   	jogo();
-    	inimigos();
+    inimigos();
   	tiro();
   	if((lado == lado_inim or lado == lado_inim-1) && altura == altura_inim){
-    		vida = vida - 1;
-	}
-      	if (vida == 0){
-        	morto = 1;
-      	}
+    	vida = vida - 1;
+      if (vida == 0){
+        morto = 1;
+      }
     	inimigos();
     	cont = 0;
     	lcd.clear();
     	delay(25);
   	}
   	if((t_lado == lado_inim or t_lado-1 == lado_inim) && t_altura == altura_inim){
-    		tiro();
-    		inimigos();
-    		cont = 0;
-    		num_tiro = 0;
-    		lcd.clear();
-      		score = score + 50;
-    		delay(10);
+    	tiro();
+    	inimigos();
+    	cont = 0;
+    	num_tiro = 0;
+    	lcd.clear();
+      	score = score + 50;
+    	delay(10);
   	}
   	delay(75);
   }
@@ -178,4 +177,3 @@ void loop() {
     }
   }
 }
-
