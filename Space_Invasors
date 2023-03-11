@@ -1,0 +1,170 @@
+#include <LiquidCrystal.h>
+
+#define Left 8
+#define Right 9
+#define Up 6
+#define Down 7
+#define Shot 10
+#define vida1 A0
+#define vida2 A1
+#define vida3 A2
+
+LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
+int num, num_inim;
+int t, cont;
+String nome;
+int vida, morto, score, lado, altura, altura_inim, t_altura, t_lado, num_tiro  = 0;
+int lado_inim = 16;
+void setup() {
+  pinMode(Left, INPUT);
+  pinMode(Right, INPUT);
+  pinMode(Up, INPUT);
+  pinMode(Down, INPUT);
+  pinMode(Shot, OUTPUT);
+  lcd.begin(16, 2);
+  Serial.begin(9600);
+}
+void loop() {
+  start();
+  leds();
+  if(vida > 0){
+  	jogo();
+    inimigos();
+  	tiro();
+  	if((lado == lado_inim or lado == lado_inim-1) && altura == altura_inim){
+    	vida = vida - 1;
+      if (vida == 0){
+        morto = 1;
+      }
+    	inimigos();
+    	cont = 0;
+    	lcd.clear();
+    	delay(25);
+  	}
+  	if((t_lado == lado_inim or t_lado-1 == lado_inim) && t_altura == altura_inim){
+    	tiro();
+    	inimigos();
+    	cont = 0;
+    	num_tiro = 0;
+    	lcd.clear();
+      	score = score + 50;
+    	delay(10);
+  	}
+  	delay(75);
+  }
+  else if (morto == 1){
+    morto = 1;
+    lcd.setCursor(0, 0);
+    lcd.print("G A M E  O V E R");
+    lcd.setCursor(0, 1);
+    lcd.print("S C O R E :");
+    lcd.setCursor(11, 1);
+    lcd.print(score);
+    lcd.scrollDisplayRight();
+    delay(10);
+    if(digitalRead(Shot) == HIGH && vida == 0 && morto == 1){
+    	lcd.clear();
+      	morto = 0;
+      	delay(100);
+    }
+
+  }
+}
+void jogo(){
+    if(digitalRead(Up) == HIGH ){
+      lcd.setCursor(lado, altura);
+      lcd.print(" ");
+      altura = 0;
+    }
+    else if(digitalRead(Down) == HIGH){
+      lcd.setCursor(lado, altura);
+      lcd.print(" ");
+      altura = 1;
+    }
+    else if(digitalRead(Right) == HIGH ){
+      lcd.setCursor(lado, altura);
+      lcd.print(" ");
+      lado = lado + 1;
+    }
+    else if(digitalRead(Left) == HIGH){
+      lcd.setCursor(lado, altura);
+      lcd.print(" ");
+      lado--;
+    }
+    else if(digitalRead(Shot) == HIGH and num_tiro < 1){
+    	num_tiro++;    
+    	t_lado = lado+1;
+  		t_altura = altura;
+    }
+    lcd.setCursor(lado,altura);
+	lcd.print(">");
+    delay(10);
+}
+void inimigos(){
+  if (cont == 0 or lado_inim == -2){
+    altura_inim = (random(0, 2));
+    lado_inim = 16;
+  	cont = 1;
+  }
+  if(cont == 1){
+    lcd.setCursor(lado_inim+1, altura_inim);
+  	lcd.print(" ");
+  	lcd.setCursor(lado_inim, altura_inim);
+  	lcd.print("O");
+    lado_inim--;
+    delay(70);
+  }
+}
+void tiro(){
+  if(t_lado == 17){
+  	t_lado,t_altura = 0;
+    num_tiro = 0;
+    
+  }
+  if(num_tiro == 1){
+    lcd.setCursor(t_lado-1, t_altura);
+  	lcd.print(" ");
+  	lcd.setCursor(t_lado, t_altura);
+  	lcd.print("-");
+    t_lado++;
+   	delay(10);
+  }
+}
+void leds(){
+  if(vida == 0){
+  	analogWrite(vida1, 0);
+    analogWrite(vida2, 0);
+    analogWrite(vida3, 0);
+  }
+  else if(vida == 1){
+	analogWrite(vida1, 1023);
+    analogWrite(vida2, 0);
+    analogWrite(vida3, 0);
+  }
+  else if(vida == 2){
+    analogWrite(vida1, 1023);
+    analogWrite(vida2, 1023);
+    analogWrite(vida3, 0);
+  }
+  else if(vida == 3){
+    analogWrite(vida1, 1023);
+    analogWrite(vida2, 1023);
+    analogWrite(vida3, 1023);
+  }  
+
+}
+
+void start(){
+  if(digitalRead(Shot) == HIGH && vida == 0 && morto == 0){
+    	lcd.clear();
+    	vida = 3; 
+    	delay(300);
+  }  
+  else if (morto == 0 && vida == 0){
+  	lcd.setCursor(0, 0);
+    lcd.print("PRESS START");
+    lcd.scrollDisplayRight();
+    delay(100);
+  }
+
+}
